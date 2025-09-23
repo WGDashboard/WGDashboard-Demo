@@ -3,6 +3,7 @@ import { v4 } from 'uuid'
 import { exec } from "child_process";
 import pool from "~~/utils/pool";
 import type {Session} from "~~/interfaces/session";
+import {execPromise} from "~~/server/utils/execPromise";
 
 
 
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const sessionId = query.sessionId
 
     if (sessionId){
-        const check = await checkSession(sessionId.toString())
+        const check = await checkAliveSession(sessionId.toString())
         if (check.status){
             return check
         }
@@ -35,9 +36,9 @@ const nextAvailableSession = async (): Promise<number> => {
     return availablePort.rows.length === 1 ? availablePort.rows[0].port : -1
 }
 
-const checkSession = async (sessionId: string): Promise<Session> => {
+export const checkAliveSession = async (sessionId: string): Promise<Session> => {
     const checkSession = await pool.query(
-        'SELECT * FROM sessions WHERE sessionId = $1 AND expire_at IS NULL', [sessionId])
+        'SELECT p.sessionid, port FROM sessions LEFT JOIN public.pool p on sessions.sessionid = p.sessionid WHERE sessions.sessionId = $1 AND expire_at IS NULL', [sessionId])
 
     if (checkSession.rows.length > 0){
         return {
@@ -55,23 +56,9 @@ const checkSession = async (sessionId: string): Promise<Session> => {
     }
 }
 
-const execPromise = (command: string, options = {}) : Promise<any> => {
-    return new Promise((resolve, reject) => {
-        exec(command, options, (error, stdout, stderr) => {
-            if (error) {
-                error.stdout = stdout;
-                error.stderr = stderr;
-                reject(error);
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-    });
-}
+
 
 const createSession = async (sessionId: string): Promise<Session> => {
-
-
     const currentDate = new Date()
     const availablePort = await nextAvailableSession()
     await pool.query(

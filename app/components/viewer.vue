@@ -12,26 +12,23 @@ const session = ref<Session>({
 })
 
 const initSession = async () => {
-	await fetch("/api/session").then(res => res.json()).then((res: Session) => {
+	await fetch("/api/session?sessionId=" + encodeURIComponent(
+		window.localStorage.getItem('sessionId') ?? ''
+	)).then(res => res.json()).then((res: Session) => {
 		session.value = res;
 	})
 	if (session.value.status){
+		window.localStorage.setItem('sessionId', session.value.sessionData?.sessionId ?? '')
 		requestedSession.value = true
-		const controller = new AbortController()
-		const timeoutId = setTimeout(() => controller.abort(), 1000)
-		setTimeout(() => {
-			let interval: NodeJS.Timeout = setInterval(async () => {
-				await fetch('//' + window.location.hostname + ':' + session.value.sessionData?.port, {
-					signal: controller.signal
-				}).catch((e) => {
-
-				}).finally(() => {
+		let interval = setInterval(async () => {
+			await fetch("/api/isSessionAlive?sessionId=" + encodeURIComponent(session.value.sessionData?.sessionId ?? '')).then(res => res.json()).then(res => {
+				if (res.status){
 					clearInterval(interval)
 					loadedSession.value = true
 					loading.value = false
-				})
-				}, 10000)
-		}, 20000)
+				}
+			})
+		}, 2000)
 	}
 }
 
@@ -51,24 +48,38 @@ const sessionHref = computed(() => {
 
 <template>
 	<div class="w-100 h-100 rounded-3 shadow-lg bg-body-tertiary d-flex">
-		<div class="m-auto d-flex flex-column gap-3" v-if="loading">
-			<div >
-				<div class="d-flex gap-2 flex-column align-items-center">
-					<div class="spinner-border" style="width: 50px; height: 50px"></div>
+		<Transition name="fade" mode="out-in">
+			<div class="m-auto d-flex flex-column gap-3" v-if="loading">
+				<div >
+					<div class="d-flex gap-2 flex-column align-items-center mb-2">
+						<div class="spinner-border" style="width: 50px; height: 50px"></div>
+					</div>
+					<p v-if="!requestedSession && !loadedSession">
+						Requesting Demo...
+					</p>
+					<p v-if="requestedSession && !loadedSession">
+						Loading Demo...
+					</p>
 				</div>
-				<p v-if="!requestedSession && !loadedSession">
-					Requesting Demo...
-				</p>
-				<p v-if="requestedSession && !loadedSession">
-					Loading Demo...
-				</p>
-			</div>
 
-		</div>
-		<iframe :src="sessionHref" class="w-100 h-100" v-else></iframe>
+			</div>
+			<iframe :src="sessionHref" class="w-100 h-100 rounded-3" v-else></iframe>
+		</Transition>
 	</div>
 </template>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+	transition: all 0.5s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+	filter: blur(8px);
+	transform: scale(0.9);
+}
+
 
 </style>

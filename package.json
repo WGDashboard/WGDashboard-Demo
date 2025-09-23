@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
-    "@types/pg": "^8.15.5"
+    "@types/pg": "^8.15.5",
+	"nuxt-cron": "^1.8.0"
   }
 }

@@ -33,9 +33,9 @@ const initSession = async () => {
 }
 
 onMounted(() => {
-	setTimeout(() => {
-		initSession()
-	}, 5000)
+	// setTimeout(() => {
+	// 	initSession()
+	// }, 5000)
 })
 
 const sessionHref = computed(() => {
@@ -47,24 +47,26 @@ const sessionHref = computed(() => {
 </script>
 
 <template>
-	<div class="w-100 h-100 rounded-3 shadow-lg bg-body-tertiary d-flex">
-		<Transition name="fade" mode="out-in">
-			<div class="m-auto d-flex flex-column gap-3" v-if="loading">
-				<div >
-					<div class="d-flex gap-2 flex-column align-items-center mb-2">
-						<div class="spinner-border" style="width: 50px; height: 50px"></div>
+	<div class="w-100 h-100 p-3 pt-0">
+		<div class="bg-body-secondary w-100 h-100 d-flex rounded-3">
+			<Transition name="fade" mode="out-in">
+				<div class="m-auto d-flex flex-column gap-3" v-if="loading">
+					<div>
+						<div class="d-flex gap-2 flex-column align-items-center mb-2">
+							<div class="spinner-border" style="width: 50px; height: 50px"></div>
+						</div>
+						<p v-if="!requestedSession && !loadedSession">
+							Requesting Demo...
+						</p>
+						<p v-if="requestedSession && !loadedSession">
+							Loading Demo...
+						</p>
 					</div>
-					<p v-if="!requestedSession && !loadedSession">
-						Requesting Demo...
-					</p>
-					<p v-if="requestedSession && !loadedSession">
-						Loading Demo...
-					</p>
-				</div>
 
-			</div>
-			<iframe :src="sessionHref" class="w-100 h-100 rounded-3" v-else></iframe>
-		</Transition>
+				</div>
+				<iframe :src="sessionHref" class="w-100 h-100 rounded-3" v-else></iframe>
+			</Transition>
+		</div>
 	</div>
 </template>
 

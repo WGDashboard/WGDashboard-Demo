@@ -10,4 +10,9 @@ export default defineNuxtConfig({
         jobsDir: 'cron',
         timeZone: "America/Los_Angeles"
     },
+    app: {
+        head: {
+            link: [{ rel: 'icon', type: 'image/png', href: 'https://wgdashboard-resources.tor1.cdn.digitaloceanspaces.com/Logos/Logo-2-128x128.png' }]
+        }
+    }
 })

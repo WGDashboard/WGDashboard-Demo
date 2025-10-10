@@ -67,9 +67,38 @@ const createSession = async (sessionId: string): Promise<Session> => {
     await pool.query(
         `INSERT INTO sessions VALUES ($1, $2, null)`, [sessionId, currentDate]
     )
-    
+    const nginxTemplate =
+        `
+        server {
+            server_name ${sessionId}.demo.wgdashboard.dev;
+            listen 443 ssl;
+            ssl_certificate /etc/letsencrypt/live/demo.wgdashboard.dev-0001/fullchain.pem;
+            ssl_certificate_key /etc/letsencrypt/live/demo.wgdashboard.dev-0001/privkey.pem;
+        
+            location / {
+                proxy_pass http://0.0.0.0:${availablePort};
+                proxy_set_header Host \\\$host;
+                proxy_set_header X-Real-IP \\\$remote_addr;
+                proxy_set_header X-Forwarded-For \\\$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \\\$scheme;
+            }
+        }
+        server {
+            server_name ${sessionId}.demo.wgdashboard.dev;
+            listen 80;
+        
+             if (\\\$host = ${sessionId}.demo.wgdashboard.dev) {
+                return 301 https://\\\$host\\\$request_uri;
+            }
+        }
+        `
+
+
     try{
-        const { stdout, stderr } = await execPromise(`docker run -d --name ${sessionId} --cap-add NET_ADMIN -p ${availablePort}:10086/tcp ghcr.io/wgdashboard/wgdashboard:latest`);
+        await execPromise(`echo "${nginxTemplate}" > /etc/nginx/sites-enabled/${sessionId}`)
+        await execPromise(`nginx -t`)
+        execPromise(`systemctl restart nginx`)
+        const { stdout, stderr } = await execPromise(`docker run -d --name ${sessionId} --cap-add NET_ADMIN -p ${availablePort}:10086/tcp docker.io/donaldzou/wgdashboard-1:latest`);
         console.log(stdout)
         return {
             status: true,

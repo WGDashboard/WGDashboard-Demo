@@ -2,6 +2,7 @@
 import type {Session} from "~~/interfaces/session";
 import {computed, onMounted, ref} from "vue";
 import type { Ref } from 'vue'
+import Loader from "~/components/loader.vue";
 
 const loading = ref(true)
 const requestedSession = ref(false)
@@ -33,14 +34,12 @@ const initSession = async () => {
 }
 
 onMounted(() => {
-	// setTimeout(() => {
-	// 	initSession()
-	// }, 5000)
+	initSession()
 })
 
 const sessionHref = computed(() => {
 	if(session.value.status){
-		return '//' + window.location.hostname + ':' + session.value.sessionData?.port
+		return `https://${session.value.sessionData?.sessionId}.demo.wgdashboard.dev`
 	}
 })
 
@@ -48,21 +47,25 @@ const sessionHref = computed(() => {
 
 <template>
 	<div class="w-100 h-100 p-3 pt-0">
-		<div class="bg-body-secondary w-100 h-100 d-flex rounded-3">
+		<div class="bg-body-secondary w-100 h-100 d-flex rounded-4 shadow">
 			<Transition name="fade" mode="out-in">
-				<div class="m-auto d-flex flex-column gap-3" v-if="loading">
-					<div>
-						<div class="d-flex gap-2 flex-column align-items-center mb-2">
-							<div class="spinner-border" style="width: 50px; height: 50px"></div>
+				<div class="m-auto p-2 text-center" v-if="loading">
+					<div class="d-flex flex-column gap-3" >
+						<div>
+							<div class="d-flex gap-2 flex-column align-items-center mb-3">
+								<div class="spinner-border" style="width: 50px; height: 50px"></div>
+							</div>
+							<Transition name="fade" mode="out-in">
+								<p v-if="!requestedSession && !loadedSession">
+									We are creating a WGDashboard just for you
+								</p>
+								<p v-else-if="requestedSession && !loadedSession">
+									Hang tight! Almost there
+								</p>
+							</Transition>
 						</div>
-						<p v-if="!requestedSession && !loadedSession">
-							Requesting Demo...
-						</p>
-						<p v-if="requestedSession && !loadedSession">
-							Loading Demo...
-						</p>
-					</div>
 
+					</div>
 				</div>
 				<iframe :src="sessionHref" class="w-100 h-100 rounded-3" v-else></iframe>
 			</Transition>
@@ -81,6 +84,10 @@ const sessionHref = computed(() => {
 	opacity: 0;
 	filter: blur(8px);
 	transform: scale(0.9);
+}
+
+.spinner-border{
+	animation: 2s cubic-bezier(0.83, 0.02, 0.1, 1.0) infinite var(--bs-spinner-animation-name);
 }
 
 

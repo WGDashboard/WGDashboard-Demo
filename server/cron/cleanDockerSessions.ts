@@ -21,7 +21,11 @@ export default defineCronHandler('everyThreeMinutes', async () => {
         console.log(expire, currentDate)
         if (expire < currentDate){
             console.log(`kill ${sessionId}`)
-            await execPromise(`docker stop ${sessionId}`)
+            try{
+                await execPromise(`docker stop ${sessionId}`)
+            } catch (e) {
+
+            }
             await pool.query(
                 `UPDATE sessions SET expire_at = $1 WHERE sessionId = $2`, [currentDate, sessionId]
             )

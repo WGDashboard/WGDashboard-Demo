@@ -1,6 +1,7 @@
 <script setup>
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import 'animate.css/animate.css'
 import 'assets/css/main.css'
 </script>
 

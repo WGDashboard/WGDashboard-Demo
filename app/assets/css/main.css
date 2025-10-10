@@ -14,7 +14,10 @@
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 main{
-    background: var(--bs-body-bg);
+    background-position: bottom;
+    background-size: cover;
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
+    background-image: url("/condor-wei-P49wmGjQ6pY-unsplash.jpg");
 }

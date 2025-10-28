@@ -20,9 +20,10 @@ export default defineCronHandler('everyThreeMinutes', async () => {
         )
         console.log(expire, currentDate)
         if (expire < currentDate){
-            console.log(`kill ${sessionId}`)
+            console.log(`Removing ${sessionId}`)
             try{
                 await execPromise(`docker stop ${sessionId}`)
+                await execPromise(`docker remove ${sessionId}`)
             } catch (e) {
 
             }

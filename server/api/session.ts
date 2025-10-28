@@ -108,7 +108,7 @@ const createSession = async (sessionId: string): Promise<Session> => {
             }
         }
     }catch (e) {
-        console.log('Failed')
+        console.log('Failed', e)
         return {
             status: false,
             sessionData: null
